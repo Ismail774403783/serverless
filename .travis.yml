@@ -41,9 +41,9 @@ env:
 
 stages:
   - name: Test
-    if: tag IS NOT present
+    if: tag IS present
   - name: Integration Test
-    if: branch IN (master, release-fast-track) AND type = push
+    # if: branch IN (master, release-fast-track) AND type = push
   - name: Deploy
     if: tag =~ ^v\d+\.\d+\.\d+$
 
@@ -159,34 +159,34 @@ jobs:
         # AWS_SECRET_ACCESS_KEY
         - secure: Dgaa5XIsA5Vbw/CYQLUAuVVsDX26C8+f1XYGwsbNmFQKbKvM8iy9lGrHlfrT3jftJkJH6re8tP1RjyZjjzLe25KPk4Tps7grNteCyiIIEDsC2aHhiXHD6zNHsItpxYusaFfyQinFWnK4CAYKWb9ZNIwHIDUIB4vq807QGAhYsnoj1Lg/ajWvtEKBwYjEzDz9OjB91lw7lpCnHtmKKw5A+TNIVGpDDZ/jRBqETsPaePtiXC9UTHZQyM3gFoeVXiJw9KSU/gjIx9REihCaWWPbnuQSeIONGGlVWY9V4DTZIsJr9/uwDcbioeXDD3G1ezGtNPPRSNTtq08QlUtE4mEtKea/+ObpllKZCeZGn6AJhMn+uqMIP95FFlqBB55YzRcLZY+Igi/qm/9LJ9RinAhxRVXiwzeQ+BdVA6jshAAzr+7wklux6lZAa0xGw9pgTv7MI4RP2LJ/LMP1ppFsnv9n/qt93Ax1VEwEu3xHZe3VTYL9tbXOPTZutf6fKjUrW7wSSuy637queESjYnnPKSb1vZcPxjSFlyh+GJvxu/3PurF9aqfiBdiorIBre+pQS4lakLtoft5nsbA+4iYUwrXR58qUPVUqQ7a0A0hedOWlp6g9ixLa6nugUP5aobJzR71T8l/IjqpnY2EEd/iINEb0XfUiZtB5zHaqFWejBtmWwCI=
       script:
-        - npm run integration-test-run-basic || { npm run integration-test-cleanup; exit 1; }
+        # - npm run integration-test-run-basic || { npm run integration-test-cleanup; exit 1; }
         - npm run integration-test-run-all || { npm run integration-test-cleanup; exit 1; }
         - npm run integration-test-cleanup
-        - |
-          tagName=`git diff HEAD^ package.json | grep '"version": "' | tail -n 1 | grep -oE "[0-9]+\.[0-9]+\.[0-9]+"` || :
-          if [ -n "$tagName" ]
-          then
-            git tag v$tagName
-            if git push https://$GITHUB_TOKEN@github.com/serverless/serverless --tags
-            then
-              if [ $TRAVIS_BRANCH = master ]
-              then
-                # Ensure `release-fast-track` branch points latest release
-                git push -f https://$GITHUB_TOKEN@github.com/serverless/serverless master:release-fast-track
-              elif [ $TRAVIS_BRANCH = release-fast-track ]
-              then
-                # Fast forward to `master`
-                git fetch --unshallow
-                git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
-                git fetch origin master
-                git checkout -b rebase-target
-                git rebase origin/master
-                git checkout master
-                git merge rebase-target
-                git push https://$GITHUB_TOKEN@github.com/serverless/serverless
-              fi
-            fi
-          fi
+        # - |
+        #   tagName=`git diff HEAD^ package.json | grep '"version": "' | tail -n 1 | grep -oE "[0-9]+\.[0-9]+\.[0-9]+"` || :
+        #   if [ -n "$tagName" ]
+        #   then
+        #     git tag v$tagName
+        #     if git push https://$GITHUB_TOKEN@github.com/serverless/serverless --tags
+        #     then
+        #       if [ $TRAVIS_BRANCH = master ]
+        #       then
+        #         # Ensure `release-fast-track` branch points latest release
+        #         git push -f https://$GITHUB_TOKEN@github.com/serverless/serverless master:release-fast-track
+        #       elif [ $TRAVIS_BRANCH = release-fast-track ]
+        #       then
+        #         # Fast forward to `master`
+        #         git fetch --unshallow
+        #         git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+        #         git fetch origin master
+        #         git checkout -b rebase-target
+        #         git rebase origin/master
+        #         git checkout master
+        #         git merge rebase-target
+        #         git push https://$GITHUB_TOKEN@github.com/serverless/serverless
+        #       fi
+        #     fi
+        #   fi
 
     - stage: Deploy
       node_js: 12
